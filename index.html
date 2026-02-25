@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopvandoan AUTO</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#0f0f0f;color:white}
+header{background:linear-gradient(90deg,red,orange);padding:20px;text-align:center;font-size:24px;font-weight:bold}
+.container{padding:20px}
+.card{background:#1c1c1c;padding:20px;margin:20px 0;border-radius:15px;box-shadow:0 0 15px red}
+.card img{width:100%;border-radius:10px;margin-top:10px}
+button{background:red;color:white;border:none;padding:8px 15px;border-radius:10px;cursor:pointer;margin-top:10px}
+button:hover{background:darkred}
+input{padding:8px;width:95%;margin:5px 0;border-radius:8px;border:none}
+.small-btn{background:#444}
+.small-btn:hover{background:#666}
+#adminPanel{display:none}
+#cartBox{position:fixed;top:10px;right:10px;background:black;padding:10px;border-radius:10px}
+</style>
+</head>
+
+<body>
+
+<header>🔥 SHOPVANDOAN AUTO 🔥</header>
+
+<div id="cartBox">
+🛒 Giỏ hàng: <span id="cartCount">0</span>
+</div>
+
+<div class="container">
+
+<div id="productList"></div>
+
+<div class="card">
+<h2>Thanh toán MB Bank</h2>
+<p>STK: 03032610202009</p>
+<img src="qrmb.jpg" width="200">
+<button onclick="thanhToan()">Tôi đã chuyển khoản</button>
+</div>
+
+<div class="card">
+<h3>Admin Login</h3>
+<input type="text" id="adminUser" placeholder="User">
+<input type="password" id="adminPass" placeholder="Pass">
+<button onclick="adminLogin()">Đăng nhập</button>
+</div>
+
+<div id="adminPanel" class="card">
+<h3>➕ Thêm Acc</h3>
+<input type="text" id="tenSP" placeholder="Tên sản phẩm">
+<input type="text" id="giaSP" placeholder="Giá tiền">
+<input type="text" id="hinhSP" placeholder="Link hình ảnh">
+<input type="text" id="listAcc" placeholder="Danh sách acc (cách nhau bằng dấu phẩy)">
+<button onclick="themSP()">Lưu sản phẩm</button>
+
+<h3>🔐 Đổi mật khẩu admin</h3>
+<input type="password" id="newPass" placeholder="Mật khẩu mới">
+<button onclick="doiPass()">Đổi mật khẩu</button>
+</div>
+
+</div>
+
+<script>
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let adminPassword = localStorage.getItem("adminPass") || "123";
+
+function loadProducts(){
+    let data = JSON.parse(localStorage.getItem("products")) || [];
+    let html="";
+    data.forEach((sp,index)=>{
+        html+=`
+        <div class="card">
+        <h2>${sp.ten}</h2>
+        <p>Giá: ${sp.gia}</p>
+        ${sp.hinh ? `<img src="${sp.hinh}">` : ""}
+        <button onclick="addCart(${index})">Thêm vào giỏ</button>
+        <button class="small-btn" onclick="xoaSP(${index})">Xoá</button>
+        </div>
+        `;
+    });
+    document.getElementById("productList").innerHTML=html;
+    document.getElementById("cartCount").innerText=cart.length;
+}
+
+function themSP(){
+    let ten=tenSP.value;
+    let gia=giaSP.value;
+    let hinh=hinhSP.value;
+    let acc=listAcc.value.split(",");
+
+    let data=JSON.parse(localStorage.getItem("products"))||[];
+    data.push({ten,gia,hinh,acc});
+    localStorage.setItem("products",JSON.stringify(data));
+    alert("Đã thêm sản phẩm");
+    loadProducts();
+}
+
+function xoaSP(i){
+    let data=JSON.parse(localStorage.getItem("products"))||[];
+    data.splice(i,1);
+    localStorage.setItem("products",JSON.stringify(data));
+    loadProducts();
+}
+
+function addCart(i){
+    cart.push(i);
+    localStorage.setItem("cart",JSON.stringify(cart));
+    loadProducts();
+}
+
+function thanhToan(){
+    let data=JSON.parse(localStorage.getItem("products"))||[];
+    if(cart.length==0){alert("Giỏ hàng trống");return;}
+
+    let result="🎉 ACC CỦA BẠN:\n\n";
+    cart.forEach(i=>{
+        let sp=data[i];
+        if(sp.acc.length>0){
+            let acc=sp.acc.shift();
+            result+=sp.ten+": "+acc+"\n";
+        }else{
+            result+=sp.ten+": Hết acc\n";
+        }
+    });
+
+    localStorage.setItem("products",JSON.stringify(data));
+    cart=[];
+    localStorage.setItem("cart","[]");
+    alert(result);
+    loadProducts();
+}
+
+function adminLogin(){
+    if(adminUser.value=="admin" && adminPass.value==adminPassword){
+        adminPanel.style.display="block";
+        alert("Đăng nhập thành công");
+    }else{
+        alert("Sai tài khoản");
+    }
+}
+
+function doiPass(){
+    adminPassword=newPass.value;
+    localStorage.setItem("adminPass",adminPassword);
+    alert("Đã đổi mật khẩu");
+}
+
+loadProducts();
+
+</script>
+
+</body>
+</html>
